@@ -1,25 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Server, StableBTreeMap, ic } from 'azle';
-import express from 'express';
+import express, { Request, Response } from 'express';
 
-/**
- * `messagesStorage` - it's a key-value datastructure that is used to store messages.
- * {@link StableBTreeMap} is a self-balancing tree that acts as a durable data storage that keeps data across canister upgrades.
- * For the sake of this contract we've chosen {@link StableBTreeMap} as a storage for the next reasons:
- * - `insert`, `get` and `remove` operations have a constant time complexity - O(1)
- * - data stored in the map survives canister upgrades unlike using HashMap where data is stored in the heap and it's lost after the canister is upgraded
- *
- * Brakedown of the `StableBTreeMap(string, Message)` datastructure:
- * - the key of map is a `messageId`
- * - the value in this map is a message itself `Message` that is related to a given key (`messageId`)
- *
- * Constructor values:
- * 1) 0 - memory id where to initialize a map.
- */
-
-/**
- This type represents a message that can be listed on a board.
- */
 class Message {
    id: string;
    title: string;
@@ -35,17 +17,17 @@ export default Server(() => {
    const app = express();
    app.use(express.json());
 
-   app.post("/messages", (req, res) => {
+   app.post("/messages", (req: Request, res) => {
       const message: Message =  {id: uuidv4(), createdAt: getCurrentDate(), ...req.body};
       messagesStorage.insert(message.id, message);
       res.json(message);
    });
 
-   app.get("/messages", (req, res) => {
+   app.get("/messages", (req: Request, res: Response) => {
       res.json(messagesStorage.values());
    });
 
-   app.get("/messages/:id", (req, res) => {
+   app.get("/messages/:id", (req: Request, res: Response) => {
       const messageId = req.params.id;
       const messageOpt = messagesStorage.get(messageId);
       if ("None" in messageOpt) {
@@ -55,7 +37,7 @@ export default Server(() => {
       }
    });
 
-   app.put("/messages/:id", (req, res) => {
+   app.put("/messages/:id", (req: Request, res: Response) => {
       const messageId = req.params.id;
       const messageOpt = messagesStorage.get(messageId);
       if ("None" in messageOpt) {
@@ -68,7 +50,7 @@ export default Server(() => {
       }
    });
 
-   app.delete("/messages/:id", (req, res) => {
+   app.delete("/messages/:id", (req: Request, res: Response) => {
       const messageId = req.params.id;
       const deletedMessage = messagesStorage.remove(messageId);
       if ("None" in deletedMessage) {
