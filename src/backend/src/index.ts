@@ -17,7 +17,7 @@ export default Server(() => {
    const app = express();
    app.use(express.json());
 
-   app.post("/messages", (req: Request, res) => {
+   app.post("/messages", (req: Request, res: Response) => {
       const message: Message =  {id: uuidv4(), createdAt: getCurrentDate(), ...req.body};
       messagesStorage.insert(message.id, message);
       res.json(message);
